@@ -353,8 +353,8 @@ describe('createLambdaProxyContext', () => {
     });
   });
 
-  context('with a GET /fn1?param=1&param=1 request with single query string', () => {
-    const requestBuilder = new RequestBuilder('GET', '/fn1?param=1');
+  context('with a GET /fn1?param=1&param=2 request with the same parameter names', () => {
+    const requestBuilder = new RequestBuilder('GET', '/fn1?param=1&param=2');
     // emaulate HAPI `query` as described here:
     // https://futurestud.io/tutorials/hapi-how-to-use-query-parameters#multiplequeryparametersofthesamename
     requestBuilder.addQuery('param', ['1', '2']);
@@ -366,9 +366,19 @@ describe('createLambdaProxyContext', () => {
       lambdaProxyContext = createLambdaProxyContext(request, options, stageVariables);
     });
 
-    it('should have a two query parameters', () => {
+    it('should have one query parameter', () => {
       expect(Object.keys(lambdaProxyContext.queryStringParameters).length).to.eq(1);
-      expect(lambdaProxyContext.queryStringParameters.param).to.eq('2');
+    });
+
+    it('should have a query parameter with 2 values', () => {
+      expect(lambdaProxyContext.queryStringParameters.param.length).to.eq(2);
+      expect(lambdaProxyContext.queryStringParameters.param).to.contain('1');
+      expect(lambdaProxyContext.queryStringParameters.param).to.contain('2');
+    });
+
+    it('should have a query parameter where the value is an array', () => {
+      const param = lambdaProxyContext.queryStringParameters.param;
+      expect(Array.isArray(param)).to.eq(true);
     });
   });
 
